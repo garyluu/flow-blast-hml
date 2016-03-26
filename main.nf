@@ -45,7 +45,7 @@ process blastn{
     set subject, file{"${hmlFailed}"} into failedHmlFiles
 
   """
-    gzcat ${subjectFastq} | blastn -db $imgtdb -outfmt 6 -query - > blast.out
+    zcat ${subjectFastq} | blastn -db $imgtdb -outfmt 6 -query - > blast.out
     ngs-extract-blast -i blast.out -f ${subjectFastq} > ${subject}.failed.txt
   """
 }
