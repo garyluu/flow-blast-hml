@@ -41,7 +41,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'HML Blast Validation'
-copyright = u'2014, Michael Halagan'
+copyright = u'2014, National Marrow Donor Program'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -248,7 +248,7 @@ texinfo_documents = [
 epub_title = u'HML Blast Validation'
 epub_author = u'Michael Halagan'
 epub_publisher = u'Michael Halagan'
-epub_copyright = u'2016, Michael Halagan'
+epub_copyright = u'2016, National Marrow Donor Program'
 
 # The language of the text. It defaults to the language option
 # or en if the language is not set.

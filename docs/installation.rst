@@ -9,14 +9,20 @@ If you have GIT installed, you can clone the project by typing
 
 	git clone https://github.com/nmdp-bioinformatics/flow-blast-hml
 
+
 Nextflow
 ------------------------
+
+.. code-block:: shell
+
+	curl -fsSL get.nextflow.io | bash
 
 
 Docker
 ------------------------
-All the files, including the documentation and the sample files are at GitHub: https://github.com/rveciana/BasemapTutorial
 
-If you have GIT installed, you can clone the project by typing 
+.. code-block:: shell
 
-	git clone https://github.com/rveciana/BasemapTutorial.git
+	docker-machine start default
+	eval $(docker-machine env default)
+
