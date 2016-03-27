@@ -5,19 +5,19 @@ Running flow-blast-hml
 
 Parameters
 ------------------------
-* --hml
+ --hml
 	* HML file
 	* Required parameter
-* --output
+ --output
 	* Output directory
 	* Required parameter
-* --imgtdir
+ --imgtdir
 	* Location of where the BLAST IMGT database is located
 	* Default location is /opt/html on the docker container
-* --imgt
+ --imgt
 	* IMGT database version
 	* Default is 3200
-* --report
+ --report
 	* Binary flag for generating HTML validation report
 	* default is 1
 
