@@ -2,16 +2,26 @@
 
 params.hml           = "${baseDir}/tutorial/ex00_ngsp_expected.xml"
 params.output        = "${baseDir}/tutorial/output"
-params.imgtdir       = file("${baseDir}/imgt")
+params.imgtdir       = file("/opt/imgt")
 params.imgt          = "3200"
+params.report        = 1
+
 imgtdb               = "${params.imgtdir}/${params.imgt}"
+report               = "${params.report}"
+outputDir            = file("${params.output}")
+expectedFile         = file("${params.hml}")
 
-outputDir    = file("${params.output}")
 outputDir.mkdirs()
-
-expectedFile = file("${params.hml}")
 expectedFile.copyTo("$outputDir/ex11_ngsp_expected.xml")
 
+//Determining what operating system it's being run on
+x   = System.properties['os.name']
+catzip = '' 
+if( x == "Mac OS X"){
+  catzip = "gzcat"
+}else{
+  catzip = "zcat"
+}
 
 // Filtering out the failed subjects
 process filterExpectedHml{
@@ -32,12 +42,13 @@ subjectIdFiles = fastqFiles.map{ hml, fileIn ->
 }
 
 
-//Blasting the 
+//Blasting the consensus sequences
 process blastn{
   tag{ subject }
 
   input:
     set subject, file(subjectFastq), file(hmlFailed) from subjectIdFiles
+    set catType from catzip
 
   output:
     set subject, file {"${subject}.failed.txt"}  into blastObservedFile mode flatten
@@ -45,7 +56,7 @@ process blastn{
     set subject, file{"${hmlFailed}"} into failedHmlFiles
 
   """
-    zcat ${subjectFastq} | blastn -db $imgtdb -outfmt 6 -query - > blast.out
+    $catzip ${subjectFastq} | blastn -db $imgtdb -outfmt 6 -query - > blast.out
     ngs-extract-blast -i blast.out -f ${subjectFastq} > ${subject}.failed.txt
   """
 }
@@ -70,6 +81,7 @@ failedSubjects = blastObservedSubjects
   [observed[0], observed[1]]
 }
 
+//Validating the blast results
 process validateInterpretation {
   tag{ subject }
 
@@ -93,15 +105,23 @@ failedValidatedFiles = failedValidated
        [ "ex11_ngsp_validated.txt", validated.text ]
    }
 failedValidatedFiles.subscribe { file -> copyToFailedDir(file) }
+reportInputFile = inputDir.toList()
 
-
+//Generating the report if the reportFlag == 1
 process generateReport {
   
-  input:
-    set infiles from inputDir
+  maxForks 1
 
+  input:
+    set infiles from reportInputFile
+    val reportFlag from report
+
+  when:
+    reportFlag == '1'
+
+  script:
   """
-    ngs-validation-report -t failedReport -f -v 1 -p $outputDir -d $infiles
+    ngs-validation-report -i blastnReport -f -v 1 -p $outputDir -d $infiles
   """ 
 
 }
@@ -112,39 +132,17 @@ def copyToFailedDir (file) {
   file.copyTo(outputDir)
 }
 
-
 def subjectId(Path path) {
   def name = path.getFileName().toString()
   loc = name =~ /(\d{4}-\d{4}-\d{1})_\d{1,2}_\d{1,2}.fa.gz$/
   return loc[0][1]
 }
 
-def getName(Path path) {
-  def name = path.getFileName().toString()
-  loc = name =~ /(ex\d{1,3}).txt$/
-  return name
-}
-
-
 def blastSubjectId(Path path) {
   def name = path.getFileName().toString()
   loc = name =~ /(\d{1,4}-\d{1,4}-\d{1}).txt$/
   return loc[0][1]
 }
-
-def blastExp2(Path path) {
-  def name = path.getFileName().toString()
-  loc = name =~ /\d{4}-\d{4}-\d{1}.(ex\d{1,3}).txt$/
-  //return loc[0][1]
-  return name
-}
-
-def blastExp(Path path) {
-  def name = path.getFileName().toString()
-  loc = name =~ /(ex\d{1,3})_ngsp_observed.txt$/
-  return loc[0][1]
-}
-
 
 
 

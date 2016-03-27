@@ -7,15 +7,14 @@ Getting started
    :maxdepth: 2
 
    installation
-   cron
+   running
 
 
-.. Developing
-.. -------------------
-.. .. toctree
-..    :maxdepth: 2
+Developers
+-------------------
+.. toctree::
+   :maxdepth: 2
    
-..    basemap
-..    plotting_data
-..    backgrounds
-..    utilities
+   requirements
+   contributing
+
