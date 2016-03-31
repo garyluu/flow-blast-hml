@@ -1,14 +1,6 @@
 Installation
 =============
 
-Downloading the tutorial
-------------------------
-All the files, including the documentation and the sample files are at GitHub: https://github.com/nmdp-bioinformatics/flow-blast-hml/tutorial
-
-If you have GIT installed, you can clone the project by typing 
-
-	git clone https://github.com/nmdp-bioinformatics/flow-blast-hml
-
 
 Nextflow
 ------------------------
@@ -26,3 +18,15 @@ Docker
 	docker-machine start default
 	eval $(docker-machine env default)
 
+
+Running the tutorial
+------------------------
+
+.. code-block:: shell
+
+	git clone https://github.com/nmdp-bioinformatics/flow-blast-hml
+	cd flow-blast-hml
+	./nextflow run nmdp-bioinformatics/flow-blast-hml -with-docker \
+	nmdpbioinformatics/docker-blast-hml \
+	--hml tutorial/ex00_ngsp_expected.xml \
+	--outdir tutorial --report 0
