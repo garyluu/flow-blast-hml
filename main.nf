@@ -4,7 +4,7 @@ params.hml           = "${baseDir}/tutorial/ex00_ngsp_expected.xml"
 params.output        = "${baseDir}/tutorial/output"
 params.imgtdir       = file("/opt/imgt")
 params.imgt          = "3200"
-params.report        = 1
+params.report        = 0
 
 imgtdb               = "${params.imgtdir}/${params.imgt}"
 report               = "${params.report}"
@@ -14,17 +14,8 @@ expectedFile         = file("${params.hml}")
 outputDir.mkdirs()
 expectedFile.copyTo("$outputDir/ex11_ngsp_expected.xml")
 
-//Determining what operating system it's being run on
-x      = System.properties['os.name']
-catzip = '' 
-if( x == "Mac OS X"){
-  catzip = "gzcat"
-}else{
-  catzip = "zcat"
-}
-
-// Filtering out the failed subjects
-process filterExpectedHml{
+// Extracting consensus sequences
+process extractConsensus{
 
   input:
     set file(expected) from file("${params.hml}")
@@ -46,7 +37,7 @@ subjectIdHmls = validateFiles.map{ hml, fileIn ->
   tuple(subjectId(fileIn), hml ) 
 }.unique()
 
-//Blasting the consensus sequences
+//Running the LD validation on the mugs
 process validateLd{
   tag{ subject }
 
@@ -67,15 +58,13 @@ process blastn{
 
   input:
     set subject, file(subjectFastq), file(hmlFailed) from subjectIdFiles
-    set catType from catzip
 
   output:
     set subject, file {"${subject}.failed.txt"}  into blastObservedFile mode flatten
     set file {"${subject}.failed.txt"}  into finalFailedObserved mode flatten
-    set subject, file{"${hmlFailed}"} into failedHmlFiles
 
   """
-    $catzip ${subjectFastq} | blastn -db $imgtdb -outfmt 6 -query - > blast.out
+    zcat ${subjectFastq} | blastn -db $imgtdb -outfmt 6 -query - > blast.out
     ngs-extract-blast -i blast.out -f ${subjectFastq} > ${subject}.failed.txt
   """
 }
@@ -131,6 +120,7 @@ failedValidatedFiles = failedValidated
 failedValidatedFiles.subscribe { file -> copyToFailedDir(file) }
 reportInputFile = inputDir.toList()
 
+//** Still having issues with using this and docker **
 //Generating the report if the reportFlag == 1
 process generateReport {
   
@@ -150,18 +140,20 @@ process generateReport {
 
 }
 
-
+//Copy file to output directory
 def copyToFailedDir (file) { 
   log.info "Copying ${file.name} into: $outputDir"
   file.copyTo(outputDir)
 }
 
+//Get subject id from fasta file
 def subjectId(Path path) {
   def name = path.getFileName().toString()
   loc = name =~ /(\d{4}-\d{4}-\d{1})_\d{1,2}_\d{1,2}.fa.gz$/
   return loc[0][1]
 }
 
+//Get subject id from fasta file
 def blastSubjectId(Path path) {
   def name = path.getFileName().toString()
   loc = name =~ /(\d{1,4}-\d{1,4}-\d{1}).txt$/
