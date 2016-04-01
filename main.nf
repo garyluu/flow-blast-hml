@@ -58,14 +58,13 @@ process blastn{
 
   input:
     set subject, file(subjectFastq), file(hmlFailed) from subjectIdFiles
-    set catType from catzip
 
   output:
     set subject, file {"${subject}.failed.txt"}  into blastObservedFile mode flatten
     set file {"${subject}.failed.txt"}  into finalFailedObserved mode flatten
 
   """
-    $catzip ${subjectFastq} | blastn -db $imgtdb -outfmt 6 -query - > blast.out
+    zcat ${subjectFastq} | blastn -db $imgtdb -outfmt 6 -query - > blast.out
     ngs-extract-blast -i blast.out -f ${subjectFastq} > ${subject}.failed.txt
   """
 }
