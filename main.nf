@@ -23,8 +23,8 @@ if( x == "Mac OS X"){
   catzip = "zcat"
 }
 
-// Filtering out the failed subjects
-process filterExpectedHml{
+// Extracting consensus sequences
+process extractConsensus{
 
   input:
     set file(expected) from file("${params.hml}")
@@ -46,7 +46,7 @@ subjectIdHmls = validateFiles.map{ hml, fileIn ->
   tuple(subjectId(fileIn), hml ) 
 }.unique()
 
-//Blasting the consensus sequences
+//Running the LD validation on the mugs
 process validateLd{
   tag{ subject }
 
@@ -131,6 +131,7 @@ failedValidatedFiles = failedValidated
 failedValidatedFiles.subscribe { file -> copyToFailedDir(file) }
 reportInputFile = inputDir.toList()
 
+//** Still having issues with using this and docker **
 //Generating the report if the reportFlag == 1
 process generateReport {
   
@@ -150,18 +151,20 @@ process generateReport {
 
 }
 
-
+//Copy file to output directory
 def copyToFailedDir (file) { 
   log.info "Copying ${file.name} into: $outputDir"
   file.copyTo(outputDir)
 }
 
+//Get subject id from fasta file
 def subjectId(Path path) {
   def name = path.getFileName().toString()
   loc = name =~ /(\d{4}-\d{4}-\d{1})_\d{1,2}_\d{1,2}.fa.gz$/
   return loc[0][1]
 }
 
+//Get subject id from fasta file
 def blastSubjectId(Path path) {
   def name = path.getFileName().toString()
   loc = name =~ /(\d{1,4}-\d{1,4}-\d{1}).txt$/
