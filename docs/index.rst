@@ -8,13 +8,12 @@ Getting started
 
    installation
    running
-
+   requirements
 
 Developers
 -------------------
 .. toctree::
    :maxdepth: 2
-   
-   requirements
+
    contributing
 

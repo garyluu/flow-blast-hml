@@ -4,7 +4,7 @@ params.hml           = "${baseDir}/tutorial/ex00_ngsp_expected.xml"
 params.output        = "${baseDir}/tutorial/output"
 params.imgtdir       = file("/opt/imgt")
 params.imgt          = "3200"
-params.report        = 1
+params.report        = 0
 
 imgtdb               = "${params.imgtdir}/${params.imgt}"
 report               = "${params.report}"
@@ -13,15 +13,6 @@ expectedFile         = file("${params.hml}")
 
 outputDir.mkdirs()
 expectedFile.copyTo("$outputDir/ex11_ngsp_expected.xml")
-
-//Determining what operating system it's being run on
-x      = System.properties['os.name']
-catzip = '' 
-if( x == "Mac OS X"){
-  catzip = "gzcat"
-}else{
-  catzip = "zcat"
-}
 
 // Extracting consensus sequences
 process extractConsensus{
@@ -72,7 +63,6 @@ process blastn{
   output:
     set subject, file {"${subject}.failed.txt"}  into blastObservedFile mode flatten
     set file {"${subject}.failed.txt"}  into finalFailedObserved mode flatten
-    set subject, file{"${hmlFailed}"} into failedHmlFiles
 
   """
     $catzip ${subjectFastq} | blastn -db $imgtdb -outfmt 6 -query - > blast.out
