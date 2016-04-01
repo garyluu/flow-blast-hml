@@ -15,7 +15,7 @@ outputDir.mkdirs()
 expectedFile.copyTo("$outputDir/ex11_ngsp_expected.xml")
 
 //Determining what operating system it's being run on
-x   = System.properties['os.name']
+x      = System.properties['os.name']
 catzip = '' 
 if( x == "Mac OS X"){
   catzip = "gzcat"
@@ -31,6 +31,7 @@ process filterExpectedHml{
 
   output:
     set file(expected), file('*.gz') into fastqFiles mode flatten
+    set file(expected), file('*.gz') into validateFiles mode flatten
 
   """
     ngs-extract-consensus -i ${expected}
@@ -41,6 +42,24 @@ subjectIdFiles = fastqFiles.map{ hml, fileIn ->
   tuple(subjectId(fileIn), fileIn, hml ) 
 }
 
+subjectIdHmls = validateFiles.map{ hml, fileIn ->
+  tuple(subjectId(fileIn), hml ) 
+}.unique()
+
+//Blasting the consensus sequences
+process validateLd{
+  tag{ subject }
+
+  input:
+    set subject, file(hmlFile) from subjectIdHmls
+
+  output:
+    set file {"${subject}.ld.txt"}  into validatedLdResults mode flatten
+
+  """
+    extract-mugs -i ${hmlFile} -s ${subject} | validate-gl-ld > ${subject}.ld.txt
+  """
+}
 
 //Blasting the consensus sequences
 process blastn{
@@ -75,6 +94,11 @@ finalFailedObserved
    }
 .subscribe { file -> copyToFailedDir(file) }
 
+validatedLdResults
+.collectFile() {  validate ->
+       [ "ld_results.txt", validate.text ]
+   }
+.subscribe { file -> copyToFailedDir(file) }
 
 failedSubjects = blastObservedSubjects 
 .map{ observed ->
