@@ -1,8 +1,6 @@
 Overview
 ================================
 
-.. note:: The pipeline does not currently work for generating the validation report if you're using the -with-docker option. If you're running the pipeline with docker then use --report 0.
-
 Parameters
 ------------------------
  --hml

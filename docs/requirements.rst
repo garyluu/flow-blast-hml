@@ -1,28 +1,28 @@
 Running the Tutorial
 ================================
 
-Step 1: Clone github repository
------------------------------
+Clone github repository
+-----------------------
 .. code-block:: shell
 
 	git clone https://github.com/nmdp-bioinformatics/flow-blast-hml
 	cd flow-blast-hml
 
-Step 2: Install nextflow
------------------------------
+Install nextflow
+----------------
 .. code-block:: shell
 
 	curl -fsSL get.nextflow.io | bash
 
-Step 3: Start docker machine
------------------------------
+Start docker machine
+--------------------
 .. code-block:: shell
 
 	docker-machine start default
 	eval $(docker-machine env default)
 
-Step 4: Execute
------------------------------
+Execute
+------------
 .. code-block:: shell
 
 	./nextflow run nmdp-bioinformatics/flow-blast-hml -with-docker \
