@@ -123,8 +123,6 @@ reportInputFile = inputDir.toList()
 
 //Generating the report if the reportFlag == 1
 process generateReport {
-  
-  maxForks 1
 
   input:
     set file(output) from file("${params.output}")
