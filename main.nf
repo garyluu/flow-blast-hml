@@ -22,7 +22,7 @@ process extractConsensus{
 
   output:
     set file(expected), file('*.gz') into fastqFiles mode flatten
-    set file(expected), file('*.gz') into validateFiles mode flatten
+    set file('*.gz') into validateFiles mode flatten
 
   """
     ngs-extract-consensus -i ${expected}
@@ -33,8 +33,8 @@ subjectIdFiles = fastqFiles.map{ hml, fileIn ->
   tuple(subjectId(fileIn), fileIn, hml ) 
 }
 
-subjectIdHmls = validateFiles.map{ hml, fileIn ->
-  tuple(subjectId(fileIn), hml ) 
+subjectIdHmls = validateFiles.map{ fileIn ->
+  tuple(subjectId(fileIn) ) 
 }.unique()
 
 //Running the LD validation on the mugs
@@ -42,13 +42,14 @@ process validateLd{
   tag{ subject }
 
   input:
-    set subject, file(hmlFile) from subjectIdHmls
+    set subject from subjectIdHmls
+    set file(expected) from file("${params.hml}")
 
   output:
     set file {"${subject}.ld.txt"}  into validatedLdResults mode flatten
 
   """
-    extract-mugs -i ${hmlFile} -s ${subject} | validate-gl-ld > ${subject}.ld.txt
+    extract-mugs -i ${expected} -s ${subject} | validate-gl-ld > ${subject}.ld.txt
   """
 }
 
@@ -120,13 +121,13 @@ failedValidatedFiles = failedValidated
 failedValidatedFiles.subscribe { file -> copyToFailedDir(file) }
 reportInputFile = inputDir.toList()
 
-//** Still having issues with using this and docker **
 //Generating the report if the reportFlag == 1
 process generateReport {
   
   maxForks 1
 
   input:
+    set file(output) from file("${params.output}")
     set infiles from reportInputFile
     val reportFlag from report
 
@@ -135,7 +136,7 @@ process generateReport {
 
   script:
   """
-    ngs-validation-report -i blastnReport -f -v 1 -p $outputDir -d $infiles
+    ngs-validation-report -i blastnReport -f -v 1 -p $output -d $output
   """ 
 
 }
@@ -148,19 +149,17 @@ def copyToFailedDir (file) {
 
 //Get subject id from fasta file
 def subjectId(Path path) {
-  def name = path.getFileName().toString()
-  loc = name =~ /(\d{4}-\d{4}-\d{1})_\d{1,2}_\d{1,2}.fa.gz$/
-  return loc[0][1]
+  def name      = path.getFileName().toString()
+  def subject   = name.split('_')
+  return subject[0]
 }
 
 //Get subject id from fasta file
 def blastSubjectId(Path path) {
-  def name = path.getFileName().toString()
-  loc = name =~ /(\d{1,4}-\d{1,4}-\d{1}).txt$/
-  return loc[0][1]
+  def fileName  = path.getFileName().toString()
+  def subject   = fileName.split('.txt')
+  return subject[0]
 }
-
-
 
 
 
